@@ -52,6 +52,8 @@ dl_from_scratch/
 
 ## 快速开始
 
+## 加载mnist数据用到了scikit-learn，其余逻辑实现没有用到，可选。
+
 ```bash
 pip install numpy matplotlib scikit-learn
 python examples/01_single_neuron.py
