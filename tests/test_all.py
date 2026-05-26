@@ -31,6 +31,16 @@ from dl_from_scratch.models.model import Model
 from dl_from_scratch.utils.data import make_moons, to_one_hot, batch_iterator, train_test_split
 from dl_from_scratch.utils.metrics import accuracy, confusion_matrix
 
+# ML 算法
+from dl_from_scratch.ml.linear_regression import LinearRegression
+from dl_from_scratch.ml.logistic_regression import LogisticRegression
+from dl_from_scratch.ml.knn import KNN
+from dl_from_scratch.ml.kmeans import KMeans
+from dl_from_scratch.ml.decision_tree import DecisionTreeClassifier
+from dl_from_scratch.ml.naive_bayes import GaussianNB
+from dl_from_scratch.ml.pca import PCA
+from dl_from_scratch.ml.svm import SVM
+
 
 def test_dense_forward_backward():
     """测试全连接层"""
@@ -362,6 +372,124 @@ def test_utils():
     print("  ✓ 工具函数")
 
 
+# ===========================
+# 传统 ML 算法测试
+# ===========================
+def test_linear_regression():
+    """测试线性回归"""
+    np.random.seed(42)
+    X = np.random.randn(30, 3)
+    y = X @ np.array([2.0, -1.0, 0.5]) + 1.5 + np.random.randn(30) * 0.1
+
+    # 闭式解
+    lr = LinearRegression(method='closed_form')
+    lr.fit(X, y)
+    r2 = lr.score(X, y)
+    assert r2 > 0.95, f"R²={r2} 过低"
+    assert np.allclose(lr.coef_, [2.0, -1.0, 0.5], atol=0.3)
+    print("  ✓ LinearRegression (closed-form)")
+
+    # 梯度下降
+    lr2 = LinearRegression(method='gd', lr=0.1, epochs=500)
+    lr2.fit(X, y)
+    assert lr2.score(X, y) > 0.9
+    print("  ✓ LinearRegression (GD)")
+
+
+def test_logistic_regression():
+    """测试逻辑回归"""
+    np.random.seed(42)
+    X = np.random.randn(50, 2)
+    y = (X[:, 0] + X[:, 1] > 0).astype(int)
+
+    logreg = LogisticRegression(lr=0.1, epochs=500)
+    logreg.fit(X, y)
+    acc = logreg.score(X, y)
+    assert acc > 0.85, f"准确率 {acc} 过低"
+    print("  ✓ LogisticRegression")
+
+
+def test_knn():
+    """测试 KNN"""
+    np.random.seed(42)
+    X = np.random.randn(40, 2)
+    y = (X[:, 0] > 0).astype(int)
+
+    knn = KNN(k=3)
+    knn.fit(X, y)
+    acc = knn.score(X, y)
+    assert acc > 0.7
+    print("  ✓ KNN")
+
+
+def test_kmeans():
+    """测试 K-Means"""
+    np.random.seed(42)
+    centers = np.array([[0, 0], [5, 5]])
+    X = np.vstack([centers[0] + np.random.randn(20, 2) * 0.5,
+                   centers[1] + np.random.randn(20, 2) * 0.5])
+
+    km = KMeans(n_clusters=2, random_seed=42)
+    km.fit(X)
+    assert km.labels_ is not None
+    assert km.inertia_ > 0
+    print("  ✓ KMeans")
+
+
+def test_decision_tree():
+    """测试决策树"""
+    np.random.seed(42)
+    X = np.random.randn(30, 2)
+    y = (X[:, 0] * X[:, 1] > 0).astype(int)  # XOR-like
+
+    dt = DecisionTreeClassifier(max_depth=5, random_seed=42)
+    dt.fit(X, y)
+    acc = dt.score(X, y)
+    assert acc > 0.7
+    print("  ✓ DecisionTree")
+
+
+def test_naive_bayes():
+    """测试朴素贝叶斯"""
+    np.random.seed(42)
+    X = np.random.randn(40, 3)
+    y = (X[:, 0] + X[:, 2] > 0).astype(int)
+
+    nb = GaussianNB()
+    nb.fit(X, y)
+    acc = nb.score(X, y)
+    assert acc > 0.7
+    print("  ✓ GaussianNB")
+
+
+def test_pca():
+    """测试 PCA"""
+    np.random.seed(42)
+    X = np.random.randn(30, 5)
+    X[:, 3:] = X[:, :2] @ np.random.randn(2, 2) * 0.1  # 实际只有 2 个主方向
+
+    pca = PCA(n_components=2)
+    pca.fit(X)
+    X_pca = pca.transform(X)
+    assert X_pca.shape == (30, 2)
+    assert len(pca.explained_variance_ratio_) == 2
+    assert pca.explained_variance_ratio_[0] > pca.explained_variance_ratio_[1]
+    print("  ✓ PCA")
+
+
+def test_svm():
+    """测试 SVM"""
+    np.random.seed(42)
+    X = np.random.randn(30, 2)
+    y = np.where(X[:, 0] + X[:, 1] > 0, 1.0, -1.0)
+
+    svm = SVM(C=1.0, kernel='linear', max_iter=200)
+    svm.fit(X, y)
+    acc = svm.score(X, y)
+    assert acc > 0.7
+    print("  ✓ SVM")
+
+
 if __name__ == '__main__':
     print("=" * 60)
     print("运行所有单元测试")
@@ -384,6 +512,15 @@ if __name__ == '__main__':
         ("Normalization", test_normalization),
         ("Model Training", test_model_training),
         ("Utils", test_utils),
+        # ML 算法
+        ("LinearRegression", test_linear_regression),
+        ("LogisticRegression", test_logistic_regression),
+        ("KNN", test_knn),
+        ("KMeans", test_kmeans),
+        ("DecisionTree", test_decision_tree),
+        ("GaussianNB", test_naive_bayes),
+        ("PCA", test_pca),
+        ("SVM", test_svm),
     ]
 
     passed = 0

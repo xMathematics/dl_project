@@ -1,3 +1,3 @@
-"""DL From Scratch — 纯 NumPy 深度学习框架"""
+"""DL From Scratch — 纯 NumPy 深度学习 + 机器学习框架"""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
